@@ -54,3 +54,14 @@ compile_commands.json
 *creator.user*
 
 *_qmlcache.qrc
+
+# WinTools runtime and build artifacts
+dist/
+build-*/
+release/
+debug/
+logs/
+config.json
+config.json.bak
+config.corrupt-*.json
+*.exe
