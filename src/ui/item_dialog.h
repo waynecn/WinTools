@@ -9,6 +9,7 @@
 
 class QCheckBox;
 class QComboBox;
+class QLabel;
 class QLineEdit;
 class QPushButton;
 class QStackedWidget;
@@ -44,6 +45,7 @@ private:
 
     QLineEdit *m_pathEdit;
     QPushButton *m_pathBrowse;
+    QLabel *m_pathHint;
 
     QLineEdit *m_urlEdit;
     QComboBox *m_browserCombo;

@@ -58,9 +58,10 @@ ItemDialog::ItemDialog(const QVector<BrowserInfo> &browsers, QWidget *parent)
     m_pathEdit = new QLineEdit(pathPage);
     m_pathBrowse = new QPushButton(QStringLiteral("浏览…"), pathPage);
     pathForm->addRow(QStringLiteral("路径："), pathRow(m_pathEdit, m_pathBrowse));
-    auto *pathHint = new QLabel(QStringLiteral("路径支持 %USERPROFILE% 等环境变量。"), pathPage);
-    pathHint->setStyleSheet(QStringLiteral("color:#666;"));
-    pathForm->addRow(QString(), pathHint);
+    m_pathHint = new QLabel(QStringLiteral("路径支持 %USERPROFILE% 等环境变量。"), pathPage);
+    m_pathHint->setStyleSheet(QStringLiteral("color:#666;"));
+    m_pathHint->setWordWrap(true);
+    pathForm->addRow(QString(), m_pathHint);
     m_stack->addWidget(pathPage);
 
     // 页面 1：URL
@@ -96,6 +97,8 @@ ItemDialog::ItemDialog(const QVector<BrowserInfo> &browsers, QWidget *parent)
     commandForm->addRow(QStringLiteral("工作目录："), pathRow(m_workingDirEdit, workingDirBrowse));
 
     m_keepConsoleCheck = new QCheckBox(QStringLiteral("保留窗口（cmd /k）"), commandPage);
+    m_keepConsoleCheck->setToolTip(QStringLiteral(
+        "未勾选时命令在后台执行、不显示控制台窗口；勾选后打开控制台并保留。"));
     commandForm->addRow(QString(), m_keepConsoleCheck);
     m_stack->addWidget(commandPage);
 
@@ -176,8 +179,15 @@ void ItemDialog::updateTypePage()
         m_stack->setCurrentIndex(0);
         if (currentType() == ItemType::Directory) {
             m_pathBrowse->setText(QStringLiteral("浏览文件夹…"));
+            m_pathHint->setText(QStringLiteral("路径支持 %USERPROFILE% 等环境变量。"));
         } else {
             m_pathBrowse->setText(QStringLiteral("浏览文件…"));
+            if (currentType() == ItemType::Application) {
+                m_pathHint->setText(QStringLiteral(
+                    "应用类型只填写 exe 路径；需要参数或工作目录时请改用「命令行」类型。"));
+            } else {
+                m_pathHint->setText(QStringLiteral("路径支持 %USERPROFILE% 等环境变量。"));
+            }
         }
         break;
     case ItemType::Url:

@@ -22,8 +22,10 @@ bool isCmdProgram(const QString &program)
                                                  Qt::CaseInsensitive) == 0;
 }
 
-// QProcess::startDetached 在 GUI 进程中会带上 CREATE_NO_WINDOW，导致 cmd 没有可见窗口。
-// 命令行条目需要自己的控制台窗口，因此直接用 CreateProcessW 并指定 CREATE_NEW_CONSOLE。
+// 命令行条目的窗口策略：
+// - cmd /k（保留窗口）：创建可见的新控制台；
+// - cmd /c（不保留）：后台执行，不显示控制台。
+//   git-bash.exe 这类常驻启动器会让 cmd 一直等待，如果创建可见控制台就会留下空黑窗。
 bool startConsoleCommand(const QStringList &arguments, const QString &workingDirectory,
                          QString *error)
 {
@@ -40,6 +42,7 @@ bool startConsoleCommand(const QStringList &arguments, const QString &workingDir
         }
         return false;
     }
+    const bool keepWindow = flag == QLatin1String("/k");
 
     QString commandProcessor =
         QProcessEnvironment::systemEnvironment().value(QStringLiteral("ComSpec"));
@@ -47,7 +50,10 @@ bool startConsoleCommand(const QStringList &arguments, const QString &workingDir
         commandProcessor = QStringLiteral("cmd.exe");
     }
 
-    const QString commandLine = QStringLiteral("\"%1\" %2 %3")
+    // 用 /d 跳过 AutoRun，/s 强制按“去掉首尾引号”的规则解析；
+    // 再把用户命令行整体包一层引号，避免 cmd 吃掉命令内部的引号
+    // （例如 "C:\Program Files\app.exe" --arg）。
+    const QString commandLine = QStringLiteral("\"%1\" /d /s %2 \"%3\"")
                                     .arg(QDir::toNativeSeparators(commandProcessor),
                                          flag,
                                          arguments.at(1));
@@ -64,7 +70,7 @@ bool startConsoleCommand(const QStringList &arguments, const QString &workingDir
         nullptr,
         nullptr,
         FALSE,
-        CREATE_NEW_CONSOLE | CREATE_UNICODE_ENVIRONMENT,
+        (keepWindow ? CREATE_NEW_CONSOLE : CREATE_NO_WINDOW) | CREATE_UNICODE_ENVIRONMENT,
         nullptr,
         nativeWorkingDir.empty() ? nullptr : nativeWorkingDir.c_str(),
         &startupInfo,
