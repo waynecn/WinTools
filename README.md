@@ -2,6 +2,12 @@
 
 个人使用的 Windows 绿色便携启动工具：把目录、应用、文件、URL 和命令行按组配置好，一键并发打开某一组。
 
+![主界面](images/mainwindow.jpg)
+
+![条目类型](images/items.jpg)
+
+![示例](images/addsomeitems.jpg)
+
 ## 功能
 
 - 分组管理五类条目：目录、应用、文件、URL（可选浏览器）、命令行（`cmd /c` 或 `cmd /k`）。
